@@ -1,11 +1,19 @@
+import { useEffect } from 'react'
+
 import { Header } from '../../components/Player/components/Header'
 import { Feedback } from '../../components/Player/components/Feedback'
 import { VideoPlayer } from '../../components/Player/components/VideoPlayer'
 import { Module } from '../../components/Player/components/Module'
-import { useAppSelector } from '../../stores'
+import { loadCourse, useAppDispatch, useAppSelector } from '../../stores'
 
 export function Player() {
-  const modules = useAppSelector((state) => state.player.course.modules)
+  const dispatch = useAppDispatch()
+  const modules = useAppSelector((state) => state.player.course?.modules)
+
+  useEffect(() => {
+    dispatch(loadCourse())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex h-screen items-center justify-center bg-zinc-950 text-zinc-50">

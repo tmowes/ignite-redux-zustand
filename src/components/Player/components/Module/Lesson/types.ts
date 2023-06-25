@@ -4,4 +4,5 @@ export type LessonProps = {
     duration: string
   }
   onPlay: () => void
+  isPlaying?: boolean
 }

@@ -9,12 +9,16 @@ export function Module(props: ModuleProps) {
   const { data, moduleIndex } = props
   const { title } = data
   const dispatch = useAppDispatch()
-  const lessons = useAppSelector((state) => state.player.course.modules[moduleIndex].lessons)
+  const { lessons, currentModuleIndex, currentLessonIndex } = useAppSelector((state) => ({
+    lessons: state.player.course?.modules[moduleIndex].lessons,
+    currentModuleIndex: state.player.currentModuleIndex,
+    currentLessonIndex: state.player.currentLessonIndex,
+  }))
 
   const amountOfLessons = lessons?.length
 
   return (
-    <Collapsible.Root className="group">
+    <Collapsible.Root className="group" defaultOpen={moduleIndex === 0}>
       <Collapsible.Trigger
         className="flex w-full items-center gap-3 rounded bg-zinc-800 p-4 text-zinc-50 transition-colors hover:bg-zinc-700"
         type="button"
@@ -34,6 +38,7 @@ export function Module(props: ModuleProps) {
             key={lesson.id}
             data={lesson}
             onPlay={() => dispatch(play([moduleIndex, lessonIndex]))}
+            isPlaying={currentModuleIndex === moduleIndex && currentLessonIndex === lessonIndex}
           />
         ))}
       </Collapsible.Content>
