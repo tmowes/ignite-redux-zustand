@@ -1,9 +1,9 @@
-import { PayloadAction, configureStore, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux'
+import { create } from 'zustand'
 
 import { api } from '../libs/api'
 
 type PlayerIndexes = [number, number]
+
 type Lesson = {
   id: string
   title: string
@@ -25,6 +25,9 @@ export type PlayerState = {
   currentModuleIndex: number
   currentLessonIndex: number
   isLoading: boolean
+  load: () => Promise<void>
+  play: (indexes: PlayerIndexes) => void
+  next: () => void
 }
 
 export const initialState = {
@@ -34,72 +37,38 @@ export const initialState = {
   isLoading: true,
 } as PlayerState
 
-export const loadCourse = createAsyncThunk('player/load', async () => {
-  const { data } = await api.get('/courses/1')
-  return data
-})
-
-const todoSlice = createSlice({
-  name: 'todo',
-  initialState: ['Fazer café', 'Estudar React'],
-  reducers: {
-    addTodo: (state, { payload }) => {
-      state.push(payload)
-    },
+export const useStore = create<PlayerState>((set, get) => ({
+  ...initialState,
+  load: async () => {
+    set({ isLoading: true })
+    const { data } = await api.get('/courses/1')
+    set({ course: data, isLoading: false })
   },
-})
 
-export const playerSlice = createSlice({
-  name: 'player',
-  initialState,
-  reducers: {
-    play: (draft, { payload: [moduleIndex, lessonIndex] }: PayloadAction<PlayerIndexes>) => {
-      draft.currentModuleIndex = moduleIndex
-      draft.currentLessonIndex = lessonIndex
-    },
-    next: (draft) => {
-      const { currentModuleIndex, currentLessonIndex, course } = draft
-      const nextLessonIndex = currentLessonIndex + 1
-      const currentModule = course?.modules[currentModuleIndex]
-
-      if (nextLessonIndex < (currentModule?.lessons?.length ?? 0)) {
-        draft.currentLessonIndex = nextLessonIndex
-        return
-      }
-
-      if (currentModuleIndex < (course?.modules?.length ?? 0) - 1) {
-        draft.currentModuleIndex = currentModuleIndex + 1
-        draft.currentLessonIndex = 0
-      }
-    },
+  play: ([moduleIndex, lessonIndex]: PlayerIndexes) => {
+    set({ currentModuleIndex: moduleIndex, currentLessonIndex: lessonIndex })
   },
-  extraReducers: (builder) => {
-    builder.addCase(loadCourse.pending, (draft) => {
-      draft.isLoading = true
-    })
+  next: () => {
+    const { currentModuleIndex, currentLessonIndex, course } = get()
+    const nextLessonIndex = currentLessonIndex + 1
+    const currentModule = course?.modules[currentModuleIndex]
 
-    builder.addCase(loadCourse.fulfilled, (draft, { payload }) => {
-      draft.course = payload
-      draft.isLoading = false
-    })
+    if (nextLessonIndex < (currentModule?.lessons?.length ?? 0)) {
+      set({ currentLessonIndex: nextLessonIndex })
+      return
+    }
+
+    if (currentModuleIndex < (course?.modules?.length ?? 0) - 1) {
+      set({ currentModuleIndex: currentModuleIndex + 1, currentLessonIndex: 0 })
+    }
   },
-})
+}))
 
-export const store = configureStore({
-  reducer: {
-    todo: todoSlice.reducer,
-    player: playerSlice.reducer,
-  },
-})
+export const useCurrentLesson = () =>
+  useStore((state) => {
+    const { course, currentModuleIndex, currentLessonIndex } = state
+    const currentModule = course?.modules[currentModuleIndex]
+    const currentLesson = currentModule?.lessons[currentLessonIndex]
 
-export type RootState = ReturnType<typeof store.getState>
-
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
-
-export const { play, next } = playerSlice.actions
-
-export const { addTodo } = todoSlice.actions
-
-export type AppDispatch = typeof store.dispatch
-
-export const useAppDispatch: () => AppDispatch = useDispatch
+    return { currentModule, currentLesson }
+  })

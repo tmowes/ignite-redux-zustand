@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 
-import { next, play, playerSlice } from '.'
+import { useStore } from '.'
+
+const store = useStore
 
 const initialTestState = {
   course: {
@@ -29,29 +31,46 @@ const initialTestState = {
   isLoading: false,
 }
 
-const { reducer } = playerSlice
-
-describe('Player with Redux', () => {
+describe('Player with Zustand', () => {
+  beforeEach(() => {
+    store.setState(initialTestState)
+  })
   it('should be able to play', () => {
-    const state = reducer(initialTestState, play([1, 2]))
+    const { play } = store.getState()
+
+    play([1, 2])
+
+    const state = store.getState()
+
     expect(state.currentModuleIndex).toEqual(1)
     expect(state.currentLessonIndex).toEqual(2)
   })
   it('should be able to play next lesson video', () => {
-    const state = reducer(initialTestState, next())
+    const { next } = store.getState()
+
+    next()
+
+    const state = store.getState()
     expect(state.currentModuleIndex).toEqual(0)
     expect(state.currentLessonIndex).toEqual(1)
   })
   it('should be able to play next module lesson video', () => {
-    const state = reducer({ ...initialTestState, currentLessonIndex: 1 }, next())
+    store.setState({ ...initialTestState, currentLessonIndex: 1 })
+    const { next } = store.getState()
+
+    next()
+    const state = store.getState()
     expect(state.currentModuleIndex).toEqual(1)
     expect(state.currentLessonIndex).toEqual(0)
   })
   it('should not be able to play next module lesson video if is end of playlist', () => {
-    const state = reducer(
-      { ...initialTestState, currentLessonIndex: 1, currentModuleIndex: 1 },
-      next(),
-    )
+    store.setState({ ...initialTestState, currentLessonIndex: 1, currentModuleIndex: 1 })
+    const { next } = store.getState()
+
+    next()
+
+    const state = store.getState()
+
     expect(state.currentModuleIndex).toEqual(1)
     expect(state.currentLessonIndex).toEqual(1)
   })

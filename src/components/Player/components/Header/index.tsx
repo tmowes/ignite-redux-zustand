@@ -1,23 +1,17 @@
 import { useEffect } from 'react'
 
-import { useAppSelector } from '../../../../stores'
+import { useCurrentLesson, useStore } from '../../../../stores'
 
 export function Header() {
-  const { currentModule, currentLesson } = useAppSelector((state) => {
-    const { currentLessonIndex, currentModuleIndex } = state.player
-    return {
-      currentModule: state.player.course?.modules[currentModuleIndex],
-      currentLesson:
-        state.player.course?.modules[currentModuleIndex].lessons[currentLessonIndex],
-    }
-  })
+  const { isLoading } = useStore((s) => ({ isLoading: s.isLoading }))
+  const { currentLesson, currentModule } = useCurrentLesson()
 
   useEffect(() => {
     if (!currentLesson) return
     document.title = `Assistindo ${currentLesson.title}`
   }, [currentLesson])
 
-  if (!currentLesson || !currentModule) return <div className="flex flex-col gap-1" />
+  if (isLoading) return <div className="flex flex-col gap-1" />
 
   return (
     <div className="flex flex-col gap-1">

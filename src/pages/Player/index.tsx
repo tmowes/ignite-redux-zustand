@@ -4,14 +4,16 @@ import { Header } from '../../components/Player/components/Header'
 import { Feedback } from '../../components/Player/components/Feedback'
 import { VideoPlayer } from '../../components/Player/components/VideoPlayer'
 import { Module } from '../../components/Player/components/Module'
-import { loadCourse, useAppDispatch, useAppSelector } from '../../stores'
+import { useStore } from '../../stores'
 
 export function Player() {
-  const dispatch = useAppDispatch()
-  const modules = useAppSelector((state) => state.player.course?.modules)
+  const { modules, load } = useStore((s) => ({
+    modules: s.course?.modules ?? [],
+    load: s.load,
+  }))
 
   useEffect(() => {
-    dispatch(loadCourse())
+    load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

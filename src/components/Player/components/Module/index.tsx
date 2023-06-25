@@ -3,16 +3,16 @@ import { ChevronDown } from 'lucide-react'
 
 import { Lesson } from './Lesson'
 import { ModuleProps } from './types'
-import { play, useAppDispatch, useAppSelector } from '../../../../stores'
+import { useStore } from '../../../../stores'
 
 export function Module(props: ModuleProps) {
   const { data, moduleIndex } = props
   const { title } = data
-  const dispatch = useAppDispatch()
-  const { lessons, currentModuleIndex, currentLessonIndex } = useAppSelector((state) => ({
-    lessons: state.player.course?.modules[moduleIndex].lessons,
-    currentModuleIndex: state.player.currentModuleIndex,
-    currentLessonIndex: state.player.currentLessonIndex,
+  const { lessons, play, currentLessonIndex, currentModuleIndex } = useStore((s) => ({
+    lessons: s.course?.modules[moduleIndex].lessons,
+    currentModuleIndex: s.currentModuleIndex,
+    currentLessonIndex: s.currentLessonIndex,
+    play: s.play,
   }))
 
   const amountOfLessons = lessons?.length
@@ -37,7 +37,7 @@ export function Module(props: ModuleProps) {
           <Lesson
             key={lesson.id}
             data={lesson}
-            onPlay={() => dispatch(play([moduleIndex, lessonIndex]))}
+            onPlay={() => play([moduleIndex, lessonIndex])}
             isPlaying={currentModuleIndex === moduleIndex && currentLessonIndex === lessonIndex}
           />
         ))}
