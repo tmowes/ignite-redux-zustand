@@ -37,40 +37,31 @@ describe('Player with Zustand', () => {
   })
   it('should be able to play', () => {
     const { play } = store.getState()
-
     play([1, 2])
-
     const state = store.getState()
-
     expect(state.currentModuleIndex).toEqual(1)
     expect(state.currentLessonIndex).toEqual(2)
   })
   it('should be able to play next lesson video', () => {
     const { next } = store.getState()
-
     next()
-
     const state = store.getState()
     expect(state.currentModuleIndex).toEqual(0)
     expect(state.currentLessonIndex).toEqual(1)
   })
   it('should be able to play next module lesson video', () => {
-    store.setState({ ...initialTestState, currentLessonIndex: 1 })
+    store.setState({ currentLessonIndex: 1 })
     const { next } = store.getState()
-
     next()
     const state = store.getState()
     expect(state.currentModuleIndex).toEqual(1)
     expect(state.currentLessonIndex).toEqual(0)
   })
   it('should not be able to play next module lesson video if is end of playlist', () => {
-    store.setState({ ...initialTestState, currentLessonIndex: 1, currentModuleIndex: 1 })
+    store.setState({ currentLessonIndex: 1, currentModuleIndex: 1 })
     const { next } = store.getState()
-
     next()
-
     const state = store.getState()
-
     expect(state.currentModuleIndex).toEqual(1)
     expect(state.currentLessonIndex).toEqual(1)
   })
